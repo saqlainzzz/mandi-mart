@@ -1,4 +1,5 @@
 import DeleteCampaignButton from "./components/DeleteCampaignButton";
+import { getSessionUser } from "@/lib/getSessionUser";
 
 async function getCampaigns() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/campaigns`, {
@@ -10,6 +11,8 @@ async function getCampaigns() {
 
 export default async function Home() {
   const campaigns = await getCampaigns();
+  const sessionUser = await getSessionUser();
+  const isAdmin = sessionUser && ["admin", "superadmin"].includes(sessionUser.role);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-stone-950 dark:via-stone-900 dark:to-stone-950">
@@ -22,7 +25,7 @@ export default async function Home() {
             href="/admin"
             className="inline-block mt-4 text-sm bg-white/15 hover:bg-white/25 px-4 py-2 rounded-full transition-colors"
           >
-            ⚙️ Admin Panel
+            ➕ Start a Campaign
           </a>
         </div>
       </div>
@@ -61,12 +64,14 @@ export default async function Home() {
               >
                 <div className="h-3 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
 
-                <div className="absolute top-6 right-4 z-10">
-                  <DeleteCampaignButton
-                    campaignId={campaign._id}
-                    fruitName={campaign.fruitName}
-                  />
-                </div>
+                {isAdmin && (
+                  <div className="absolute top-6 right-4 z-10">
+                    <DeleteCampaignButton
+                      campaignId={campaign._id}
+                      fruitName={campaign.fruitName}
+                    />
+                  </div>
+                )}
 
                 <div className="p-6">
                   <div className="flex justify-between items-center pr-2">
@@ -134,7 +139,7 @@ export default async function Home() {
         {campaigns.length === 0 && (
           <div className="bg-white dark:bg-stone-900 rounded-2xl p-10 text-center mt-8 border border-amber-100 dark:border-stone-800">
             <h2 className="text-2xl font-bold text-stone-900 dark:text-white">No Active Campaigns</h2>
-            <p className="text-stone-500 dark:text-stone-400 mt-2">Ask admin to create one.</p>
+            <p className="text-stone-500 dark:text-stone-400 mt-2">Start one for your favourite fruit!</p>
           </div>
         )}
       </div>

@@ -1,5 +1,6 @@
 import "./globals.css";
 import ThemeToggle from "./components/ThemeToggle";
+import Header from "./components/Header";
 
 export const metadata = {
   title: "Mandi Mart",
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="bg-[var(--background)] text-[var(--foreground)]">
+        <Header />
         <ThemeToggle />
         {children}
       </body>

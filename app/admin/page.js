@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-export default function AdminPage() {
+export default function CreateCampaignPage() {
   const [fruitName, setFruitName] = useState("");
   const [pricePerKg, setPricePerKg] = useState("");
   const [targetKg, setTargetKg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [campaigns, setCampaigns] = useState([]);
+  const [me, setMe] = useState(null);
 
   async function loadCampaigns() {
     const res = await fetch("/api/campaigns", { cache: "no-store" });
@@ -16,14 +18,21 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => setMe(data.user));
+
     loadCampaigns();
   }, []);
+
+  const isAdmin = me && ["admin", "superadmin"].includes(me.role);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
-    await fetch("/api/campaigns", {
+    const res = await fetch("/api/campaigns", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -32,6 +41,14 @@ export default function AdminPage() {
         targetKg: Number(targetKg),
       }),
     });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || "Unable to create campaign");
+      setLoading(false);
+      return;
+    }
 
     setFruitName("");
     setPricePerKg("");
@@ -47,7 +64,14 @@ export default function AdminPage() {
     );
     if (!confirmed) return;
 
-    await fetch(`/api/campaigns/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/campaigns/${id}`, { method: "DELETE" });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Unable to delete campaign");
+      return;
+    }
+
     loadCampaigns();
   }
 
@@ -59,9 +83,12 @@ export default function AdminPage() {
         </a>
 
         <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-lg mt-4 border border-amber-100 dark:border-stone-800">
-          <h1 className="text-3xl font-bold mb-6 text-stone-900 dark:text-white">
-            🛒 Mandi Mart Admin
+          <h1 className="text-3xl font-bold mb-1 text-stone-900 dark:text-white">
+            🛒 Start a Campaign
           </h1>
+          <p className="text-stone-500 dark:text-stone-400 mb-6 text-sm">
+            Raise demand for any fruit, saathi. Everyone can see and join in.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
@@ -88,6 +115,13 @@ export default function AdminPage() {
               className="w-full border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
               required
             />
+
+            {error && (
+              <div className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
@@ -98,37 +132,39 @@ export default function AdminPage() {
           </form>
         </div>
 
-        <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-lg mt-6 border border-amber-100 dark:border-stone-800">
-          <h2 className="text-xl font-bold mb-4 text-stone-900 dark:text-white">Manage Campaigns</h2>
+        {isAdmin && (
+          <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-lg mt-6 border border-amber-100 dark:border-stone-800">
+            <h2 className="text-xl font-bold mb-4 text-stone-900 dark:text-white">Manage Campaigns</h2>
 
-          {campaigns.length === 0 ? (
-            <p className="text-stone-500 dark:text-stone-400">No campaigns yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {campaigns.map((c) => (
-                <div
-                  key={c._id}
-                  className="flex justify-between items-center border border-amber-100 dark:border-stone-800 rounded-lg p-4"
-                >
-                  <div>
-                    <p className="font-semibold text-stone-900 dark:text-white">
-                      🥭 {c.fruitName}
-                    </p>
-                    <p className="text-sm text-stone-500 dark:text-stone-400">
-                      {c.currentKg}kg / {c.targetKg}kg · ₹{c.pricePerKg}/kg
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(c._id, c.fruitName)}
-                    className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900 px-3 py-1.5 rounded-lg transition-colors"
+            {campaigns.length === 0 ? (
+              <p className="text-stone-500 dark:text-stone-400">No campaigns yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {campaigns.map((c) => (
+                  <div
+                    key={c._id}
+                    className="flex justify-between items-center border border-amber-100 dark:border-stone-800 rounded-lg p-4"
                   >
-                    🗑️ Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                    <div>
+                      <p className="font-semibold text-stone-900 dark:text-white">
+                        🥭 {c.fruitName}
+                      </p>
+                      <p className="text-sm text-stone-500 dark:text-stone-400">
+                        {c.currentKg}kg / {c.targetKg}kg · ₹{c.pricePerKg}/kg
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(c._id, c.fruitName)}
+                      className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </main>
   );

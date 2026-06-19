@@ -1,6 +1,7 @@
 import OrderForm from "@/app/components/OrderForm";
 import OrdersList from "@/app/components/OrdersList";
 import DeleteCampaignButton from "@/app/components/DeleteCampaignButton";
+import { getSessionUser } from "@/lib/getSessionUser";
 
 async function getCampaign(id) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/campaigns/${id}`, {
@@ -17,6 +18,8 @@ async function getCampaign(id) {
 export default async function CampaignPage({ params }) {
   const { id } = await params;
   const campaign = await getCampaign(id);
+  const sessionUser = await getSessionUser();
+  const isAdmin = sessionUser && ["admin", "superadmin"].includes(sessionUser.role);
 
   if (!campaign) {
     return (
@@ -53,11 +56,13 @@ export default async function CampaignPage({ params }) {
               <p className="mt-2 text-amber-50 text-xl">₹{campaign.pricePerKg}/kg</p>
             </div>
 
-            <DeleteCampaignButton
-              campaignId={campaign._id}
-              fruitName={campaign.fruitName}
-              redirectTo="/"
-            />
+            {isAdmin && (
+              <DeleteCampaignButton
+                campaignId={campaign._id}
+                fruitName={campaign.fruitName}
+                redirectTo="/"
+              />
+            )}
           </div>
         </div>
       </div>
@@ -135,7 +140,7 @@ export default async function CampaignPage({ params }) {
             {!completed ? (
               <>
                 <p className="text-stone-600 dark:text-stone-400 mb-4">
-                  Enter your name and quantity required.
+                  Enter the quantity required. Your order is placed under your logged-in name.
                 </p>
                 <OrderForm campaignId={campaign._id} />
               </>
