@@ -3,11 +3,11 @@ import OrdersList from "@/app/components/OrdersList";
 
 async function getCampaign(id) {
   const res = await fetch(
-    `http://localhost:3000/api/campaigns/${id}`,
-    {
-      cache: "no-store",
-    }
-  );
+  `${process.env.NEXT_PUBLIC_BASE_URL}/api/campaigns/${id}`,
+  {
+    cache: "no-store",
+  }
+);
 
   if (!res.ok) {
     throw new Error("Failed to fetch campaign");
