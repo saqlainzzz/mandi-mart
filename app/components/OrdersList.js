@@ -1,11 +1,11 @@
 async function getOrders(campaignId) {
   try {
     const res = await fetch(
-      `http://localhost:3000/api/orders/${campaignId}`,
-      {
-        cache: "no-store",
-      }
-    );
+  `${process.env.NEXT_PUBLIC_BASE_URL}/api/orders/${campaignId}`,
+  {
+    cache: "no-store",
+  }
+);
 
     if (!res.ok) {
       return [];
