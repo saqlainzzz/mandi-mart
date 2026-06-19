@@ -18,7 +18,7 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto px-6 py-10">
           <h1 className="text-5xl font-black tracking-tight">🛒 Mandi Mart</h1>
           <p className="mt-2 text-amber-50 text-lg">Community Bulk Buying Platform</p>
-          
+          <a
             href="/admin"
             className="inline-block mt-4 text-sm bg-white/15 hover:bg-white/25 px-4 py-2 rounded-full transition-colors"
           >
@@ -119,7 +119,7 @@ export default async function Home() {
                     </div>
                   </div>
 
-                  
+                  <a
                     href={`/campaign/${campaign._id}`}
                     className="block mt-6 text-center bg-gradient-to-r from-amber-600 to-rose-600 hover:opacity-90 text-white py-3 rounded-xl font-semibold transition-opacity"
                   >
